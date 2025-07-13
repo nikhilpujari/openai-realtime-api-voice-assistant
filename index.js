@@ -18,7 +18,12 @@ if (!OPENAI_API_KEY) {
 }
 
 // Initialize Fastify
-const fastify = Fastify();
+const fastify = Fastify({
+  https: {
+    key:  fs.readFileSync('/etc/letsencrypt/live/n8n.nikhilpujari.in/privkey.pem'),
+    cert: fs.readFileSync('/etc/letsencrypt/live/n8n.nikhilpujari.in/fullchain.pem')
+  }
+});
 fastify.register(fastifyFormBody);
 fastify.register(fastifyWs);
 
@@ -200,12 +205,12 @@ fastify.register(async (fastify) => {
     });
 });
 
-fastify.listen({ port: PORT }, (err) => {
-    if (err) {
-        console.error(err);
-        process.exit(1);
-    }
-    console.log(`Server is listening on port ${PORT}`);
+fastify.listen({ port: 443, host: '0.0.0.0' }, err => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+  console.log('Fastify HTTPS server running on port 443');
 });
 
 // Function to make ChatGPT API completion call with structured outputs
